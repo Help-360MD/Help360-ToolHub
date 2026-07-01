@@ -45,6 +45,21 @@ if (isDemoMode) {
 }
 
 // ==========================================================================
+// TOOL NORMALIZATION (Failsafe for Sheets Header discrepancies)
+// ==========================================================================
+function normalizeTool(tool) {
+  if (!tool) return null;
+  return {
+    ToolName: tool.ToolName || tool["Tool Name"] || "Unnamed Tool",
+    Description: tool.Description || tool.description || "",
+    URL: tool.URL || tool.url || "",
+    Icon: tool.Icon || tool["Font Awesome Icon Class"] || tool.icon || "fas fa-link",
+    Status: tool.Status || tool.status || "Active",
+    Category: tool.Category || tool.category || "General"
+  };
+}
+
+// ==========================================================================
 // CENTRAL REQUEST CONTROLLER (CORS Bypass)
 // ==========================================================================
 async function fetchAPI(action, payload = {}) {
@@ -275,7 +290,7 @@ async function initDashboard() {
   showLoading(false);
 
   if (response.status === "success") {
-    allTools = response.tools || [];
+    allTools = (response.tools || []).map(normalizeTool);
     userFavorites = response.favorites || [];
 
     // Render filter chips
@@ -544,7 +559,7 @@ async function loadAdminData() {
   if (toolsRes.status === "success") {
     // In live mode, admin gets all tools. In demo mode getDashboardData returns active.
     // The server-side doGet/doPost returns all tools if admin role is authenticated.
-    adminTools = toolsRes.tools || [];
+    adminTools = (toolsRes.tools || []).map(normalizeTool);
     renderAdminTools();
   }
 
