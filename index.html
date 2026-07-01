@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help360MD Tools Hub - Redirecting...</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Immediate Redirect Logic (No-Flicker Session Guard)
+    (function() {
+      const sessionUser = sessionStorage.getItem('help360_user');
+      if (sessionUser) {
+        window.location.replace('dashboard.html');
+      } else {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+</head>
+<body style="display:flex; justify-content:center; align-items:center; height:100vh; background-color:#F4F7FA; font-family:'Inter',sans-serif;">
+  <div style="text-align:center;">
+    <div class="spinner" style="margin: 0 auto 15px auto;"></div>
+    <p style="color:#0F4C81; font-weight:600; font-size:14px;">Redirecting to Help360MD Tools Hub...</p>
+  </div>
+</body>
+</html>

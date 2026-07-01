@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Help360MD Tools Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Immediate Role and Session Guard
+    (function() {
+      const sessionUser = sessionStorage.getItem('help360_user');
+      if (!sessionUser) {
+        window.location.replace('login.html');
+      } else {
+        const user = JSON.parse(sessionUser);
+        if (user.Role !== 'Admin') {
+          window.location.replace('dashboard.html');
+        }
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <div class="brand-wrapper">
+          <img src="logo.png" alt="Help360MD Logo" class="sidebar-logo" onerror="this.src='https://placehold.co/80x80/0F4C81/FFFFFF?text=H360'">
+          <span class="brand-name">Help360MD</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      <ul class="sidebar-menu">
+        <li class="menu-item">
+          <a href="dashboard.html">
+            <i class="fas fa-house"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="dashboard.html?focusSearch=true">
+            <i class="fas fa-cubes"></i>
+            <span>Tools</span>
+          </a>
+        </li>
+        <li class="menu-item admin-only active" id="sidebarAdminLink">
+          <a href="admin.html">
+            <i class="fas fa-user-gear"></i>
+            <span>Admin Panel</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="profile.html">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" onclick="handleLogout(event)" class="btn btn-outline" style="width: 100%; border-color: transparent; justify-content: flex-start; padding: 10px 14px; color: var(--danger);">
+          <i class="fas fa-right-from-bracket" style="font-size: 18px; width: 20px; text-align: center; margin-right: 14px;"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="sidebar-toggle" onclick="toggleMobileSidebar()" style="display: none; margin-right: 10px;" id="mobileHamburger">
+            <i class="fas fa-bars"></i>
+          </button>
+          <span style="font-weight: 600; font-size: 15px; color: var(--text-main);">Admin Operations Control</span>
+        </div>
+        <div class="header-right">
+          <div class="user-badge">
+            <div class="user-avatar" id="headerAvatar">A</div>
+            <div class="user-details">
+              <span class="user-name" id="headerUserName">Admin User</span>
+              <span class="user-role" id="headerUserRole">Administrator</span>
+            </div>
+          </div>
+          <button onclick="handleLogout(event)" class="btn-icon" title="Logout" aria-label="Sign Out">
+            <i class="fas fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="app-content">
+        <div class="page-header">
+          <h1 class="page-title">Admin Management Console</h1>
+          <p class="page-subtitle">Configure user accounts, manage internal tool catalogs, and audit access history logs.</p>
+        </div>
+
+        <!-- Metrics Dashboard -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon users">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="statTotalUsers">0</span>
+              <span class="stat-label">Total Users</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon tools">
+              <i class="fas fa-cubes"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="statTotalTools">0</span>
+              <span class="stat-label">Total Tools</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon active">
+              <i class="fas fa-circle-check"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="statActiveTools">0</span>
+              <span class="stat-label">Active Tools</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Control Tabs -->
+        <div class="admin-tabs">
+          <button class="tab-btn active" onclick="switchAdminTab('usersTab', this)">
+            <i class="fas fa-user-gear"></i> User Management
+          </button>
+          <button class="tab-btn" onclick="switchAdminTab('toolsTab', this)">
+            <i class="fas fa-sliders"></i> Tool Management
+          </button>
+          <button class="tab-btn" onclick="switchAdminTab('historyTab', this)">
+            <i class="fas fa-clock-rotate-left"></i> Login Audit Logs
+          </button>
+        </div>
+
+        <!-- ==================================================================
+             USER MANAGEMENT TAB
+             ================================================================== -->
+        <div id="usersTab" class="tab-content active">
+          <div class="panel-toolbar">
+            <span class="panel-title">System Users</span>
+            <button class="btn btn-primary" style="width: auto;" onclick="openAddUserModal()">
+              <i class="fas fa-plus"></i> Add New User
+            </button>
+          </div>
+          
+          <div class="table-container">
+            <table class="data-table" id="usersTable">
+              <thead>
+                <tr>
+                  <th>Full Name</th>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Last Login</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 30px;">
+                    <div class="spinner" style="margin: 0 auto 10px auto;"></div>
+                    Loading users...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             TOOL MANAGEMENT TAB
+             ================================================================== -->
+        <div id="toolsTab" class="tab-content">
+          <div class="panel-toolbar">
+            <span class="panel-title">Dynamic Ported Tools</span>
+            <button class="btn btn-primary" style="width: auto;" onclick="openAddToolModal()">
+              <i class="fas fa-plus"></i> Add New Tool
+            </button>
+          </div>
+          
+          <div class="table-container">
+            <table class="data-table" id="toolsTable">
+              <thead>
+                <tr>
+                  <th>Tool Name</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="toolsTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             LOGIN AUDIT LOGS TAB
+             ================================================================== -->
+        <div id="historyTab" class="tab-content">
+          <div class="panel-toolbar">
+            <span class="panel-title">Access Attempts (Last 100 entries)</span>
+            <button class="btn btn-outline" style="width: auto;" onclick="refreshLoginLogs()">
+              <i class="fas fa-rotate"></i> Refresh Logs
+            </button>
+          </div>
+          
+          <div class="table-container">
+            <table class="data-table" id="historyTable">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                  <th>User Agent Metadata</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       USER MANAGEMENT MODALS
+       ========================================================================== -->
+  <!-- User Create / Edit Modal -->
+  <div id="userModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="userModalTitle">Add New User</h3>
+        <button class="modal-close" onclick="closeModal('userModal')" aria-label="Close modal">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+      <form id="userForm" onsubmit="handleUserSubmit(event)">
+        <div class="modal-body">
+          <input type="hidden" id="editUserKey">
+          
+          <div class="form-group">
+            <label for="userFullName">Full Name</label>
+            <div class="input-wrapper">
+              <i class="fas fa-signature"></i>
+              <input type="text" id="userFullName" class="form-control" placeholder="e.g. Awais Raza" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="userUsername">Username</label>
+            <div class="input-wrapper">
+              <i class="fas fa-user"></i>
+              <input type="text" id="userUsername" class="form-control" placeholder="e.g. awais" required>
+            </div>
+          </div>
+          
+          <div class="form-group" id="userPasswordGroup">
+            <label for="userPassword">Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="userPassword" class="form-control" placeholder="Enter password">
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('userPassword', this)" aria-label="Toggle password visibility">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="userRole">Role</label>
+              <div class="input-wrapper">
+                <i class="fas fa-shield"></i>
+                <select id="userRole" class="form-control" style="padding-left: 42px;" required>
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="userStatus">Status</label>
+              <div class="input-wrapper">
+                <i class="fas fa-toggle-on"></i>
+                <select id="userStatus" class="form-control" style="padding-left: 42px;" required>
+                  <option value="Active">Active</option>
+                  <option value="Disabled">Disabled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('userModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reset Password Modal -->
+  <div id="resetPasswordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset User Password</h3>
+        <button class="modal-close" onclick="closeModal('resetPasswordModal')" aria-label="Close modal">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+      <form id="resetPasswordForm" onsubmit="handleResetPasswordSubmit(event)">
+        <div class="modal-body">
+          <input type="hidden" id="resetPasswordUserKey">
+          <p style="margin-bottom: 15px; font-size: 13px; color: var(--text-muted);">
+            Resetting password for: <strong id="resetPasswordLabel" style="color: var(--text-main);"></strong>
+          </p>
+          
+          <div class="form-group">
+            <label for="resetNewPassword">New Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="resetNewPassword" class="form-control" placeholder="Enter new password" required>
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('resetNewPassword', this)" aria-label="Toggle password visibility">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('resetPasswordModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Reset Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       TOOL MANAGEMENT MODALS
+       ========================================================================== */
+  <!-- Tool Add / Edit Modal -->
+  <div id="toolModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="toolModalTitle">Add New Tool</h3>
+        <button class="modal-close" onclick="closeModal('toolModal')" aria-label="Close modal">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+      <form id="toolForm" onsubmit="handleToolSubmit(event)">
+        <div class="modal-body">
+          <input type="hidden" id="editToolKey">
+          
+          <div class="form-group">
+            <label for="toolName">Tool Name</label>
+            <div class="input-wrapper">
+              <i class="fas fa-heading"></i>
+              <input type="text" id="toolNameField" class="form-control" placeholder="e.g. Vaccine Eligibility Tool" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="toolDescription">Description</label>
+            <div class="input-wrapper">
+              <i class="fas fa-align-left"></i>
+              <input type="text" id="toolDescription" class="form-control" placeholder="USCIS Vaccine Eligibility Verification Tool" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="toolURL">URL</label>
+            <div class="input-wrapper">
+              <i class="fas fa-link"></i>
+              <input type="url" id="toolURL" class="form-control" placeholder="https://help-360md.github.io/VaccinesEligiblitytool/" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="toolIcon">Font Awesome Icon Class</label>
+              <div class="input-wrapper">
+                <i class="fas fa-circle-nodes"></i>
+                <input type="text" id="toolIcon" class="form-control" placeholder="e.g. fas fa-shield-halved" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="toolCategory">Category</label>
+              <div class="input-wrapper">
+                <i class="fas fa-tags"></i>
+                <input type="text" id="toolCategory" class="form-control" placeholder="e.g. Clinical, Finance" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="toolStatus">Status</label>
+            <div class="input-wrapper">
+              <i class="fas fa-toggle-on"></i>
+              <select id="toolStatus" class="form-control" style="padding-left: 42px;" required>
+                <option value="Active">Active</option>
+                <option value="Disabled">Disabled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('toolModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Tool</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <span class="spinner-text">Updating spreadsheet database...</span>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initAdminPanel();
+    });
+  </script>
+</body>
+</html>

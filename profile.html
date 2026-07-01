@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - Help360MD Tools Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Immediate Session Guard
+    (function() {
+      const sessionUser = sessionStorage.getItem('help360_user');
+      if (!sessionUser) {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <div class="brand-wrapper">
+          <img src="logo.png" alt="Help360MD Logo" class="sidebar-logo" onerror="this.src='https://placehold.co/80x80/0F4C81/FFFFFF?text=H360'">
+          <span class="brand-name">Help360MD</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      <ul class="sidebar-menu">
+        <li class="menu-item">
+          <a href="dashboard.html">
+            <i class="fas fa-house"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="dashboard.html?focusSearch=true">
+            <i class="fas fa-cubes"></i>
+            <span>Tools</span>
+          </a>
+        </li>
+        <li class="menu-item admin-only" id="sidebarAdminLink" style="display: none;">
+          <a href="admin.html">
+            <i class="fas fa-user-gear"></i>
+            <span>Admin Panel</span>
+          </a>
+        </li>
+        <li class="menu-item active">
+          <a href="profile.html">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" onclick="handleLogout(event)" class="btn btn-outline" style="width: 100%; border-color: transparent; justify-content: flex-start; padding: 10px 14px; color: var(--danger);">
+          <i class="fas fa-right-from-bracket" style="font-size: 18px; width: 20px; text-align: center; margin-right: 14px;"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="sidebar-toggle" onclick="toggleMobileSidebar()" style="display: none; margin-right: 10px;" id="mobileHamburger">
+            <i class="fas fa-bars"></i>
+          </button>
+          <span style="font-weight: 600; font-size: 15px; color: var(--text-main);">My Profile</span>
+        </div>
+        <div class="header-right">
+          <div class="user-badge">
+            <div class="user-avatar" id="headerAvatar">U</div>
+            <div class="user-details">
+              <span class="user-name" id="headerUserName">Loading...</span>
+              <span class="user-role" id="headerUserRole">Loading...</span>
+            </div>
+          </div>
+          <button onclick="handleLogout(event)" class="btn-icon" title="Logout" aria-label="Sign Out">
+            <i class="fas fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="app-content">
+        <div class="page-header">
+          <h1 class="page-title">My Account Settings</h1>
+          <p class="page-subtitle">View profile details and change your account password.</p>
+        </div>
+
+        <div class="profile-grid">
+          <!-- Profile Card -->
+          <div class="profile-card">
+            <div class="profile-avatar" id="profileAvatar">U</div>
+            <h3 id="profileFullName">Loading Name...</h3>
+            <span class="role-badge" id="profileRoleBadge">User</span>
+            
+            <ul class="profile-info-list">
+              <li class="profile-info-item">
+                <span class="profile-info-label">Username</span>
+                <span class="profile-info-value" id="profileUsername">loading</span>
+              </li>
+              <li class="profile-info-item">
+                <span class="profile-info-label">Role Privilege</span>
+                <span class="profile-info-value" id="profileRole">loading</span>
+              </li>
+              <li class="profile-info-item">
+                <span class="profile-info-label">Last Logged In</span>
+                <span class="profile-info-value" id="profileLastLogin" style="font-size: 11px;">loading</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Password Card -->
+          <div class="profile-content-card">
+            <h2>Change Password</h2>
+            <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+              <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-lock"></i>
+                  <input type="password" id="currentPassword" class="form-control" placeholder="Enter current password" required autocomplete="current-password">
+                  <button type="button" class="password-toggle" onclick="togglePasswordVisibility('currentPassword', this)" aria-label="Toggle password visibility">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-key"></i>
+                  <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required autocomplete="new-password">
+                  <button type="button" class="password-toggle" onclick="togglePasswordVisibility('newPassword', this)" aria-label="Toggle password visibility">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="confirmPassword">Confirm New Password</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-circle-check"></i>
+                  <input type="password" id="confirmPassword" class="form-control" placeholder="Re-type new password" required autocomplete="new-password">
+                  <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirmPassword', this)" aria-label="Toggle password visibility">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: auto;">
+                <i class="fas fa-save"></i>
+                <span>Update Password</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <span class="spinner-text">Updating password...</span>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initProfile();
+    });
+  </script>
+</body>
+</html>

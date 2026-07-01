@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Help360MD Tools Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Immediate Session Guard
+    (function() {
+      const sessionUser = sessionStorage.getItem('help360_user');
+      if (!sessionUser) {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <div class="brand-wrapper">
+          <img src="logo.png" alt="Help360MD Logo" class="sidebar-logo" onerror="this.src='https://placehold.co/80x80/0F4C81/FFFFFF?text=H360'">
+          <span class="brand-name">Help360MD</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      <ul class="sidebar-menu">
+        <li class="menu-item active">
+          <a href="dashboard.html">
+            <i class="fas fa-house"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="#" onclick="focusSearch(event)">
+            <i class="fas fa-cubes"></i>
+            <span>Tools</span>
+          </a>
+        </li>
+        <li class="menu-item admin-only" id="sidebarAdminLink" style="display: none;">
+          <a href="admin.html">
+            <i class="fas fa-user-gear"></i>
+            <span>Admin Panel</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="profile.html">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+          </a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" onclick="handleLogout(event)" class="btn btn-outline" style="width: 100%; border-color: transparent; justify-content: flex-start; padding: 10px 14px; color: var(--danger);">
+          <i class="fas fa-right-from-bracket" style="font-size: 18px; width: 20px; text-align: center; margin-right: 14px;"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="sidebar-toggle" onclick="toggleMobileSidebar()" style="display: none; margin-right: 10px;" id="mobileHamburger">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="search-container">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search tools by name, category, or description..." oninput="handleSearch()">
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="user-badge">
+            <div class="user-avatar" id="headerAvatar">U</div>
+            <div class="user-details">
+              <span class="user-name" id="headerUserName">Loading...</span>
+              <span class="user-role" id="headerUserRole">Loading...</span>
+            </div>
+          </div>
+          <button onclick="handleLogout(event)" class="btn-icon" title="Logout" aria-label="Sign Out">
+            <i class="fas fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="app-content">
+        <div class="page-header">
+          <h1 class="page-title">Welcome to Help360MD Tools Hub</h1>
+          <p class="page-subtitle">Access clinical, operational, and financial tools for staff members.</p>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="category-filters" id="categoryFilters">
+          <button class="filter-chip active" onclick="filterByCategory('All')">All Tools</button>
+          <!-- Categories loaded dynamically -->
+        </div>
+
+        <!-- Favorites Section -->
+        <div id="favoritesSection" style="display: none;">
+          <h2 class="section-title">
+            <i class="fas fa-star" style="color: var(--favorite);"></i>
+            <span>Favorite Tools</span>
+          </h2>
+          <div class="tools-grid" id="favoritesGrid">
+            <!-- Favorite cards loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- All Tools Section -->
+        <h2 class="section-title">
+          <i class="fas fa-cubes"></i>
+          <span>All Available Tools</span>
+        </h2>
+        <div class="tools-grid" id="toolsGrid">
+          <!-- Tool cards loaded dynamically -->
+          <div class="empty-state">
+            <div class="spinner" style="margin: 0 auto 15px auto;"></div>
+            <h3>Loading Tools...</h3>
+            <p>Fetching active tools from Google Sheets database</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <span class="spinner-text">Syncing with database...</span>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+  <script>
+    // Initialize Dashboard on DOM Load
+    document.addEventListener('DOMContentLoaded', () => {
+      initDashboard();
+    });
+  </script>
+</body>
+</html>
